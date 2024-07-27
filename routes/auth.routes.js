@@ -10,10 +10,10 @@ const saltRounds = 10;
 
 // POST /auth/signup - Creates a new user in the database
 router.post("/signup", (req, res, next) => {
-  const { email, password, name } = req.body;
+  const { email, password, username } = req.body;
 
-  if (email === "" || password === "" || name === "") {
-    res.status(400).json({ message: "Provide email, password and name" });
+  if (email === "" || password === "" || username === "") {
+    res.status(400).json({ message: "Provide email, password and username" });
     return;
   }
 
@@ -42,11 +42,11 @@ router.post("/signup", (req, res, next) => {
       const salt = bcrypt.genSaltSync(saltRounds);
       const hashedPassword = bcrypt.hashSync(password, salt);
 
-      return User.create({ email, password: hashedPassword, name });
+      return User.create({ email, password: hashedPassword, username });
     })
     .then((createdUser) => {
-      const { email, name, _id } = createdUser;
-      const user = { email, name, _id };
+      const { email, username, _id } = createdUser;
+      const user = { email, username, _id };
       res.status(201).json({ user: user });
     })
     .catch((err) => {
@@ -58,24 +58,20 @@ router.post("/signup", (req, res, next) => {
 // POST /auth/login - Verifies email and password and returns a JWT
 router.post("/login", (req, res, next) => {
   const { email, password } = req.body;
-
-  if (email === "" || password === "") {
-    res.status(400).json({ message: "Provide email and password." });
-    return;
-  }
+  console.log(`Login attempt: Email: ${email}`); // Log email for debugging
 
   User.findOne({ email })
     .then((foundUser) => {
       if (!foundUser) {
-        res.status(401).json({ message: "User not found." });
-        return;
+        console.log("User not found");
+        return res.status(401).json({ message: "User not found." });
       }
 
       const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
 
       if (passwordCorrect) {
-        const { _id, email, name } = foundUser;
-        const payload = { _id, email, name };
+        const { _id, email, username } = foundUser;
+        const payload = { _id, email, username };
         const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
           algorithm: "HS256",
           expiresIn: "6h",
@@ -83,10 +79,14 @@ router.post("/login", (req, res, next) => {
 
         res.status(200).json({ authToken: authToken });
       } else {
+        console.log("Password mismatch");
         res.status(401).json({ message: "Unable to authenticate the user" });
       }
     })
-    .catch((err) => res.status(500).json({ message: "Internal Server Error" }));
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ message: "Internal Server Error" });
+    });
 });
 
 // GET /auth/verify - Used to verify JWT stored on the client
