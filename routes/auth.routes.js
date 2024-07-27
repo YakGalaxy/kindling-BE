@@ -23,42 +23,45 @@ router.post("/signup", (req, res, next) => {
     return;
   }
 
-  const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+  // const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+   const passwordRegex = /^.{3,}$/;
   if (!passwordRegex.test(password)) {
     res.status(400).json({
       message:
-        "Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter.",
+        "Password must have at least 3 characters and contain at least one number, one lowercase and one uppercase letter.",
     });
     return;
   }
 
+  // "Password must have at least 3 characters and contain at least one number, one lowercase and one uppercase letter.",
+    
   User.findOne({ email })
-    .then((foundUser) => {
-      if (foundUser) {
-        res.status(400).json({ message: "User already exists." });
-        return;
-      }
+      .then((foundUser) => {
+        if (foundUser) {
+          res.status(400).json({ message: "User already exists." });
+          return;
+        }
 
-      const salt = bcrypt.genSaltSync(saltRounds);
-      const hashedPassword = bcrypt.hashSync(password, salt);
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const hashedPassword = bcrypt.hashSync(password, salt);
 
-      return User.create({ email, password: hashedPassword, username });
-    })
-    .then((createdUser) => {
-      const { email, username, _id } = createdUser;
-      const user = { email, username, _id };
-      res.status(201).json({ user: user });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({ message: "Internal Server Error" });
-    });
+        return User.create({ email, password: hashedPassword, username });
+      })
+      .then((createdUser) => {
+        const { email, username, _id } = createdUser;
+        const user = { email, username, _id };
+        res.status(201).json({ user: user });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({ message: "Internal Server Error" });
+      });
 });
 
 // POST /auth/login - Verifies email and password and returns a JWT
 router.post("/login", (req, res, next) => {
   const { email, password } = req.body;
-  console.log(`Login attempt: Email: ${email}`); // Log email for debugging
+  console.log(`Login attempt: Email: ${email} ${password}`); // Log email for debugging
 
   User.findOne({ email })
     .then((foundUser) => {
@@ -68,7 +71,7 @@ router.post("/login", (req, res, next) => {
       }
 
       const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
-
+      console.log(passwordCorrect);
       if (passwordCorrect) {
         const { _id, email, username } = foundUser;
         const payload = { _id, email, username };
