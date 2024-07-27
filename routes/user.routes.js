@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User.model"); 
+const User = require("../models/User.model");
+const { isAuthenticated } = require("../middleware/jwt.middleware"); // Import JWT middleware
 
-// CREATE a new user
+// CREATE a new user (public route)
 router.post("/users", async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -14,8 +15,8 @@ router.post("/users", async (req, res) => {
   }
 });
 
-// READ all users
-router.get("/users", async (req, res) => {
+// READ all users (protected route)
+router.get("/users", isAuthenticated, async (req, res) => {
   try {
     const users = await User.find();
     res.status(200).json(users);
@@ -24,8 +25,8 @@ router.get("/users", async (req, res) => {
   }
 });
 
-// READ a specific user
-router.get("/users/:id", async (req, res) => {
+// READ a specific user (protected route)
+router.get("/users/:id", isAuthenticated, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -35,8 +36,8 @@ router.get("/users/:id", async (req, res) => {
   }
 });
 
-// UPDATE a user
-router.put("/users/:id", async (req, res) => {
+// UPDATE a user (protected route)
+router.put("/users/:id", isAuthenticated, async (req, res) => {
   try {
     const { username, email, password } = req.body;
     const user = await User.findByIdAndUpdate(
@@ -51,8 +52,8 @@ router.put("/users/:id", async (req, res) => {
   }
 });
 
-// DELETE a user
-router.delete("/users/:id", async (req, res) => {
+// DELETE a user (protected route)
+router.delete("/users/:id", isAuthenticated, async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
