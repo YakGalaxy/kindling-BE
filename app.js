@@ -1,7 +1,6 @@
 // Import Required Modules
 const dotenv = require("dotenv");
 const express = require("express");
-const { isAuthenticated } = require("./middleware/jwt.middleware");
 
 // Load Environment Variables
 dotenv.config();
@@ -21,6 +20,15 @@ app.use("/api", allRoutes);
 
 const authRouter = require("./routes/auth.routes");
 app.use("/auth", authRouter);
+
+const profileRouter = require("./routes/profile.routes");
+app.use("/profiles", profileRouter);
+
+const handoverKitRouter = require("./routes/handoverkit.routes");
+app.use("/handover-kits", handoverKitRouter);
+
+const userRouter = require("./routes/user.routes");
+app.use("/users", userRouter);
 
 // Set Up Error Handling
 require("./error-handling")(app);

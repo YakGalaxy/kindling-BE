@@ -4,7 +4,7 @@ const HandoverKit = require("../models/HandoverKit.model");
 const { isAuthenticated } = require("../middleware/jwt.middleware"); // Import JWT middleware
 
 // CREATE a new handover kit (protected route)
-router.post("/handover-kits", isAuthenticated, async (req, res) => {
+router.post("/", isAuthenticated, async (req, res) => {
   try {
     const { title, description, items } = req.body;
     const handoverKit = new HandoverKit({ title, description, items });
@@ -16,7 +16,7 @@ router.post("/handover-kits", isAuthenticated, async (req, res) => {
 });
 
 // READ all handover kits (protected route)
-router.get("/handover-kits", isAuthenticated, async (req, res) => {
+router.get("/", isAuthenticated, async (req, res) => {
   try {
     const handoverKits = await HandoverKit.find();
     res.status(200).json(handoverKits);
@@ -26,7 +26,7 @@ router.get("/handover-kits", isAuthenticated, async (req, res) => {
 });
 
 // READ a specific handover kit (protected route)
-router.get("/handover-kits/:id", isAuthenticated, async (req, res) => {
+router.get("/:id", isAuthenticated, async (req, res) => {
   try {
     const handoverKit = await HandoverKit.findById(req.params.id);
     if (!handoverKit)
@@ -38,7 +38,7 @@ router.get("/handover-kits/:id", isAuthenticated, async (req, res) => {
 });
 
 // UPDATE a handover kit (protected route)
-router.put("/handover-kits/:id", isAuthenticated, async (req, res) => {
+router.put("/:id", isAuthenticated, async (req, res) => {
   try {
     const { title, description, items } = req.body;
     const handoverKit = await HandoverKit.findByIdAndUpdate(
@@ -55,7 +55,7 @@ router.put("/handover-kits/:id", isAuthenticated, async (req, res) => {
 });
 
 // DELETE a handover kit (protected route)
-router.delete("/handover-kits/:id", isAuthenticated, async (req, res) => {
+router.delete("/:id", isAuthenticated, async (req, res) => {
   try {
     const handoverKit = await HandoverKit.findByIdAndDelete(req.params.id);
     if (!handoverKit)

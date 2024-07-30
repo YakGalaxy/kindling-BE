@@ -4,7 +4,7 @@ const Profile = require("../models/Profile.model"); // Adjust path if needed
 const { isAuthenticated } = require("../middleware/jwt.middleware"); // Import JWT middleware
 
 // CREATE a new profile (protected route)
-router.post("/profiles", isAuthenticated, async (req, res) => {
+router.post("/", isAuthenticated, async (req, res) => {
   try {
     const { user, bio, preferences } = req.body;
     const profile = new Profile({ user, bio, preferences });
@@ -16,7 +16,7 @@ router.post("/profiles", isAuthenticated, async (req, res) => {
 });
 
 // READ all profiles (protected route)
-router.get("/profiles", isAuthenticated, async (req, res) => {
+router.get("/", isAuthenticated, async (req, res) => {
   try {
     const profiles = await Profile.find().populate("user");
     res.status(200).json(profiles);
@@ -26,7 +26,7 @@ router.get("/profiles", isAuthenticated, async (req, res) => {
 });
 
 // READ a specific profile (protected route)
-router.get("/profiles/:id", isAuthenticated, async (req, res) => {
+router.get("/:id", isAuthenticated, async (req, res) => {
   try {
     const profile = await Profile.findById(req.params.id).populate("user");
     if (!profile) return res.status(404).json({ error: "Profile not found" });
@@ -37,7 +37,7 @@ router.get("/profiles/:id", isAuthenticated, async (req, res) => {
 });
 
 // UPDATE a profile (protected route)
-router.put("/profiles/:id", isAuthenticated, async (req, res) => {
+router.put("/:id", isAuthenticated, async (req, res) => {
   try {
     const { bio, preferences } = req.body;
     const profile = await Profile.findByIdAndUpdate(
@@ -53,7 +53,7 @@ router.put("/profiles/:id", isAuthenticated, async (req, res) => {
 });
 
 // DELETE a profile (protected route)
-router.delete("/profiles/:id", isAuthenticated, async (req, res) => {
+router.delete("/:id", isAuthenticated, async (req, res) => {
   try {
     const profile = await Profile.findByIdAndDelete(req.params.id);
     if (!profile) return res.status(404).json({ error: "Profile not found" });
