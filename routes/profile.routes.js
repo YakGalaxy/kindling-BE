@@ -1,63 +1,32 @@
 const express = require("express");
 const router = express.Router();
-const Profile = require("../models/Profile.model"); // Adjust path if needed
-const { isAuthenticated } = require("../middleware/jwt.middleware"); // Import JWT middleware
-
-// CREATE a new profile (protected route)
-router.post("/", isAuthenticated, async (req, res) => {
-  try {
-    const { user, bio, preferences } = req.body;
-    const profile = new Profile({ user, bio, preferences });
-    await profile.save();
-    res.status(201).json(profile);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// READ all profiles (protected route)
-router.get("/", isAuthenticated, async (req, res) => {
-  try {
-    const profiles = await Profile.find().populate("user");
-    res.status(200).json(profiles);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// READ a specific profile (protected route)
-router.get("/:id", isAuthenticated, async (req, res) => {
-  try {
-    const profile = await Profile.findById(req.params.id).populate("user");
-    if (!profile) return res.status(404).json({ error: "Profile not found" });
-    res.status(200).json(profile);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+const Profile = require("../models/Profile.model");
+const User = require("../models/User.model");
+const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 // UPDATE a profile (protected route)
 router.put("/:id", isAuthenticated, async (req, res) => {
   try {
-    const { bio, preferences } = req.body;
-    const profile = await Profile.findByIdAndUpdate(
-      req.params.id,
-      { bio, preferences },
-      { new: true }
-    );
-    if (!profile) return res.status(404).json({ error: "Profile not found" });
-    res.status(200).json(profile);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+    const { username, email, password, bio, preferences } = req.body;
+    const profile = await Profile.findById(req.params.id);
 
-// DELETE a profile (protected route)
-router.delete("/:id", isAuthenticated, async (req, res) => {
-  try {
-    const profile = await Profile.findByIdAndDelete(req.params.id);
     if (!profile) return res.status(404).json({ error: "Profile not found" });
-    res.status(200).json({ message: "Profile deleted successfully" });
+
+    if (username || email || password) {
+      const user = await User.findById(profile.user);
+
+      if (username) user.username = username;
+      if (email) user.email = email;
+      if (password) user.password = await bcrypt.hash(password, 10); // Hash new password
+
+      await user.save();
+    }
+
+    profile.bio = bio || profile.bio;
+    profile.preferences = preferences || profile.preferences;
+    await profile.save();
+
+    res.status(200).json(profile);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
