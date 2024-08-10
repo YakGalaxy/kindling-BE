@@ -1,43 +1,9 @@
-// models/profile.model.js
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-// Define the schema for the Profile model
-const profileSchema = new mongoose.Schema(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    bio: {
-      type: String,
-      trim: true,
-      default: "", // Default empty string
-    },
-    preferences: {
-      theme: {
-        type: String,
-        enum: ["light", "dark"],
-        default: "light",
-      },
-      // Additional preferences can be added here
-      notifications: {
-        type: Boolean,
-        default: true,
-      },
-    },
-    // Example additional field
-    profilePicture: {
-      type: String,
-      trim: true,
-    },
-  },
-  {
-    timestamps: true, // Adds createdAt and updatedAt fields
-  }
-);
+const profileSchema = new Schema({
+  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  email: { type: String, required: true, unique: true }, // Ensure the email is unique
+});
 
-// Create the model
-const Profile = mongoose.model("Profile", profileSchema);
-
-module.exports = Profile;
+module.exports = mongoose.model("Profile", profileSchema);
