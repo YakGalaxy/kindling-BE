@@ -8,6 +8,7 @@ router.post("/", isAuthenticated, async (req, res) => {
   try {
     const { title, description, contentItems } = req.body;
 
+    // Validate input
     if (!title || !description) {
       return res
         .status(400)
@@ -28,7 +29,7 @@ router.post("/", isAuthenticated, async (req, res) => {
   }
 });
 
-// READ all handover kits (protected route) - Return only kits belonging to the authenticated user
+// READ all handover kits for a specific user (protected route)
 router.get("/", isAuthenticated, async (req, res) => {
   try {
     const user = req.payload._id; // Get the user ID from the token payload
@@ -64,6 +65,7 @@ router.put("/:id", isAuthenticated, async (req, res) => {
     const user = req.payload._id; // Get the user ID from the token payload
     const { title, description, contentItems } = req.body;
 
+    // Update the handover kit only if it belongs to the user
     const handoverKit = await HandoverKit.findOneAndUpdate(
       { _id: req.params.id, user }, // Update if the kit belongs to the user
       { title, description, contentItems },

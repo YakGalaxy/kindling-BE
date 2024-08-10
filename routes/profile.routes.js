@@ -1,17 +1,33 @@
 const express = require("express");
 const router = express.Router();
 const Profile = require("../models/Profile.model");
-const User = require("../models/User.model");
-const bcrypt = require("bcrypt");
+const mongoose = require("mongoose"); // Import mongoose
 const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 // GET a profile by ID (protected route)
 router.get("/:id", isAuthenticated, async (req, res) => {
   try {
-    const profile = await Profile.findById(req.params.id).populate("user");
-    if (!profile) return res.status(404).json({ error: "Profile not found" });
+    console.log("Fetching profile with ID:", req.params.id); // Debug log
+
+    // Ensure that the ID is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      console.log("Invalid ObjectId format");
+      return res.status(400).json({ error: "Invalid profile ID format" });
+    }
+
+    const profile = await Profile.findById(req.params.id)
+      .populate("user")
+      .lean();
+    console.log("Fetched profile:", profile); // Debug log
+
+    if (!profile) {
+      console.log("Profile not found - Back End"); // Debug log
+      return res.status(404).json({ error: "Profile not found" });
+    }
+
     res.status(200).json(profile);
   } catch (err) {
+    console.error("Error fetching profile:", err.message); // Debug log
     res.status(400).json({ error: err.message });
   }
 });
