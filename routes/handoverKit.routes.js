@@ -1,13 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const HandoverKit = require("../models/HandoverKit.model");
-const { isAuthenticated } = require("../middleware/jwt.middleware"); // Import JWT middleware
+const { isAuthenticated } = require("../middleware/jwt.middleware");
 
 // CREATE a new handover kit (protected route)
 router.post("/", isAuthenticated, async (req, res) => {
   try {
-    const { title, description, contentItems } = req.body; // Changed 'items' to 'contentItems'
-    const handoverKit = new HandoverKit({ title, description, contentItems }); // Changed 'items' to 'contentItems'
+    const { title, description, contentItems } = req.body;
+
+    if (!title || !description) {
+      return res
+        .status(400)
+        .json({ error: "Title and description are required" });
+    }
+
+    const user = req.payload._id; // Get the user ID from the token payload
+    const handoverKit = new HandoverKit({
+      title,
+      description,
+      contentItems,
+      user,
+    }); // Associate the handover kit with the user
     await handoverKit.save();
     res.status(201).json(handoverKit);
   } catch (err) {
@@ -15,51 +28,73 @@ router.post("/", isAuthenticated, async (req, res) => {
   }
 });
 
-// READ all handover kits (protected route)
+// READ all handover kits (protected route) - Return only kits belonging to the authenticated user
 router.get("/", isAuthenticated, async (req, res) => {
   try {
-    const handoverKits = await HandoverKit.find();
+    const user = req.payload._id; // Get the user ID from the token payload
+    const handoverKits = await HandoverKit.find({ user }).exec(); // Find handover kits for the authenticated user
     res.status(200).json(handoverKits);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// READ a specific handover kit (protected route)
+// READ a specific handover kit (protected route) - Ensure that the user can only access their own kit
 router.get("/:id", isAuthenticated, async (req, res) => {
   try {
-    const handoverKit = await HandoverKit.findById(req.params.id);
-    if (!handoverKit)
-      return res.status(404).json({ error: "Handover kit not found" });
+    const user = req.payload._id; // Get the user ID from the token payload
+    const handoverKit = await HandoverKit.findOne({
+      _id: req.params.id,
+      user,
+    }).exec(); // Find the kit if it belongs to the user
+    if (!handoverKit) {
+      return res
+        .status(404)
+        .json({ error: "Handover kit not found or not authorized" });
+    }
     res.status(200).json(handoverKit);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// UPDATE a handover kit (protected route)
+// UPDATE a handover kit (protected route) - Ensure the user can only update their own kit
 router.put("/:id", isAuthenticated, async (req, res) => {
   try {
-    const { title, description, contentItems } = req.body; // Changed 'items' to 'contentItems'
-    const handoverKit = await HandoverKit.findByIdAndUpdate(
-      req.params.id,
-      { title, description, contentItems }, // Changed 'items' to 'contentItems'
+    const user = req.payload._id; // Get the user ID from the token payload
+    const { title, description, contentItems } = req.body;
+
+    const handoverKit = await HandoverKit.findOneAndUpdate(
+      { _id: req.params.id, user }, // Update if the kit belongs to the user
+      { title, description, contentItems },
       { new: true }
-    );
-    if (!handoverKit)
-      return res.status(404).json({ error: "Handover kit not found" });
+    ).exec();
+
+    if (!handoverKit) {
+      return res
+        .status(404)
+        .json({ error: "Handover kit not found or not authorized" });
+    }
     res.status(200).json(handoverKit);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// DELETE a handover kit (protected route)
+// DELETE a handover kit (protected route) - Ensure the user can only delete their own kit
 router.delete("/:id", isAuthenticated, async (req, res) => {
   try {
-    const handoverKit = await HandoverKit.findByIdAndDelete(req.params.id);
-    if (!handoverKit)
-      return res.status(404).json({ error: "Handover kit not found" });
+    const user = req.payload._id; // Get the user ID from the token payload
+    const handoverKit = await HandoverKit.findOneAndDelete({
+      _id: req.params.id,
+      user,
+    }).exec(); // Delete if the kit belongs to the user
+
+    if (!handoverKit) {
+      return res
+        .status(404)
+        .json({ error: "Handover kit not found or not authorized" });
+    }
     res.status(200).json({ message: "Handover kit deleted successfully" });
   } catch (err) {
     res.status(400).json({ error: err.message });

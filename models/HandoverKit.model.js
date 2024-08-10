@@ -6,16 +6,17 @@ const contentItemSchema = new mongoose.Schema(
     value: { type: String, required: true },
   },
   { timestamps: true }
-); // Add timestamps here if needed for individual content items
+);
 
 const handoverKitSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String },
-    contentItems: [contentItemSchema], // Array of content items
+    contentItems: [contentItemSchema],
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Added this line
   },
   { timestamps: true }
-); // Add timestamps to the main schema
+);
 
 const HandoverKit = mongoose.model("HandoverKit", handoverKitSchema);
 

@@ -12,6 +12,7 @@ const profileSchema = new mongoose.Schema(
     bio: {
       type: String,
       trim: true,
+      default: "", // Default empty string
     },
     preferences: {
       theme: {
@@ -19,9 +20,17 @@ const profileSchema = new mongoose.Schema(
         enum: ["light", "dark"],
         default: "light",
       },
-      // Add any additional preference fields as needed
+      // Additional preferences can be added here
+      notifications: {
+        type: Boolean,
+        default: true,
+      },
     },
-    // Add any additional fields as needed
+    // Example additional field
+    profilePicture: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields

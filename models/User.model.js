@@ -22,7 +22,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // Add any additional fields as needed
+    // Example additional fields
+    firstName: {
+      type: String,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      trim: true,
+    },
+    profilePicture: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields
