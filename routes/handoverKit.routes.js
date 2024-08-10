@@ -6,8 +6,8 @@ const { isAuthenticated } = require("../middleware/jwt.middleware"); // Import J
 // CREATE a new handover kit (protected route)
 router.post("/", isAuthenticated, async (req, res) => {
   try {
-    const { title, description, items } = req.body;
-    const handoverKit = new HandoverKit({ title, description, items });
+    const { title, description, contentItems } = req.body; // Changed 'items' to 'contentItems'
+    const handoverKit = new HandoverKit({ title, description, contentItems }); // Changed 'items' to 'contentItems'
     await handoverKit.save();
     res.status(201).json(handoverKit);
   } catch (err) {
@@ -40,10 +40,10 @@ router.get("/:id", isAuthenticated, async (req, res) => {
 // UPDATE a handover kit (protected route)
 router.put("/:id", isAuthenticated, async (req, res) => {
   try {
-    const { title, description, items } = req.body;
+    const { title, description, contentItems } = req.body; // Changed 'items' to 'contentItems'
     const handoverKit = await HandoverKit.findByIdAndUpdate(
       req.params.id,
-      { title, description, items },
+      { title, description, contentItems }, // Changed 'items' to 'contentItems'
       { new: true }
     );
     if (!handoverKit)
